@@ -10,10 +10,14 @@ import org.springframework.stereotype.Component
 class KafkaListener(
     private val kubernetesService: KubernetesService,
     private val objectMapper: ObjectMapper
-) {
-    @KafkaListener(topics = ["k8s-resources"], groupId = "group_id")
-    fun consume(message: String) {
-        val kubernetesEntity = objectMapper.readValue(message, KubernetesEntity::class.java)
-        kubernetesService.saveKubernetes(kubernetesEntity)
+) : GenericKafkaListener<KubernetesEntity>(objectMapper){
+    private val service = kubernetesService;
+    override fun getEntityType(): Class<KubernetesEntity> =
+         KubernetesEntity::class.java
+
+
+    override fun saveEntity(entity: KubernetesEntity) {
+        service.saveKubernetes(entity)
     }
+
 }
